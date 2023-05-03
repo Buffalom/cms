@@ -138,7 +138,7 @@ class ComposerLockTest extends TestCase
     }
 
     /** @test */
-    public function it_can_gets_normalized_version_of_a_package_from_composer_lock()
+    public function it_can_get_normalized_version_of_a_package_from_composer_lock()
     {
         PackToTheFuture::generateComposerLockForMultiple([
             'package/one' => '1.0.0',
