@@ -13,6 +13,8 @@ class ComposerLockBackupTest extends \PHPUnit\Framework\TestCase
     protected $customLockPath = './custom/composer.lock';
     protected $backupLockPath = './storage/statamic/updater/composer.lock.bak';
     protected $customBackupLockPath = './custom/storage/statamic/updater/composer.lock.bak';
+    protected $mockLockPath = './storage/statamic/updater/composer.lock.mock';
+    protected $customMockLockPath = './custom/storage/statamic/updater/composer.lock.mock';
 
     public function setUp(): void
     {
@@ -43,6 +45,20 @@ class ComposerLockBackupTest extends \PHPUnit\Framework\TestCase
     }
 
     /** @test */
+    public function it_can_mock_existing_lock_file()
+    {
+        file_put_contents($this->lockPath, $content = 'test lock file content');
+
+        $this->assertFileExists($this->lockPath);
+        $this->assertFileNotExists($this->mockLockPath);
+
+        Lock::mock();
+
+        $this->assertFileExists($this->mockLockPath);
+        $this->assertEquals($content, file_get_contents($this->mockLockPath));
+    }
+
+    /** @test */
     public function it_doesnt_throw_exception_when_attempting_to_backup_non_existend_lock_file()
     {
         Lock::backup('non-existent-file.lock');
@@ -68,6 +84,24 @@ class ComposerLockBackupTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($content, file_get_contents($this->customBackupLockPath));
     }
 
+    /** @test */
+    public function it_can_mock_lock_file_from_custom_location()
+    {
+        if (! is_dir($dir = './custom')) {
+            mkdir($dir);
+        }
+
+        file_put_contents($this->customLockPath, $content = 'custom lock file content');
+
+        $this->assertFileExists($this->customLockPath);
+        $this->assertFileNotExists($this->customMockLockPath);
+
+        Lock::mock($this->customLockPath);
+
+        $this->assertFileExists($this->customMockLockPath);
+        $this->assertEquals($content, file_get_contents($this->customMockLockPath));
+    }
+
     private function removeLockFiles()
     {
         $files = [
@@ -75,6 +109,8 @@ class ComposerLockBackupTest extends \PHPUnit\Framework\TestCase
             $this->customLockPath,
             $this->backupLockPath,
             $this->customBackupLockPath,
+            $this->mockLockPath,
+            $this->customMockLockPath,
         ];
 
         foreach ($files as $lockFile) {

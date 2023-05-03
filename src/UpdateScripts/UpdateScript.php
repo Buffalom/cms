@@ -9,6 +9,7 @@ use Statamic\Console\NullConsole;
 
 abstract class UpdateScript
 {
+    const MOCK_PATH = 'storage/statamic/updater/composer.lock.mock';
     const BACKUP_PATH = 'storage/statamic/updater/composer.lock.bak';
 
     protected $package;
@@ -68,7 +69,8 @@ abstract class UpdateScript
     public function isUpdatingTo($version)
     {
         $version = (new VersionParser)->normalize($version);
-        $newVersion = Lock::file()->getNormalizedInstalledVersion($this->package());
+        $newLockFile = Lock::file(self::MOCK_PATH)->exists() ? Lock::file(self::MOCK_PATH) : Lock::file();
+        $newVersion = $newLockFile->getNormalizedInstalledVersion($this->package());
         $oldVersion = Lock::file(self::BACKUP_PATH)->getNormalizedInstalledVersion($this->package());
 
         return version_compare($version, $newVersion, '<=') && version_compare($version, $oldVersion, '>');

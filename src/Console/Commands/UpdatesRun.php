@@ -18,6 +18,7 @@ class UpdatesRun extends Command
      */
     protected $signature = 'statamic:updates:run
         { version : Specify the version you are updating from }
+        { --to= : Specify the version you are updating to }
         { --package= : Specify a specific package you are updating from (ie. john/my-addon) }';
 
     /**
@@ -36,7 +37,7 @@ class UpdatesRun extends Command
     {
         $package = $this->option('package') ?? Statamic::PACKAGE;
 
-        $success = UpdateScriptManager::runUpdatesForSpecificPackageVersion($package, $this->argument('version'), $this);
+        $success = UpdateScriptManager::runUpdatesForSpecificPackageVersion($package, $this->argument('version'), $this->option('to'), $this);
 
         $success
             ? $this->info('Update scripts were run successfully!')

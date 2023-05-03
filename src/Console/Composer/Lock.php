@@ -16,8 +16,6 @@ class Lock
 
     /**
      * Instantiate lock file helper.
-     *
-     * @param  string  $file
      */
     public function __construct(string $file = 'composer.lock')
     {
@@ -29,7 +27,6 @@ class Lock
     /**
      * Instantiate lock file helper.
      *
-     * @param  string  $file
      * @return static
      */
     public static function file(string $file = 'composer.lock')
@@ -38,23 +35,38 @@ class Lock
     }
 
     /**
-     * Backup lock file, using vanilla PHP so that this can be run in a Composer hook.
-     *
-     * @param  string  $file
+     * Backup lock file using vanilla PHP so that this can be run in a Composer hook.
      */
     public static function backup(string $file = 'composer.lock')
     {
-        if (! is_file($file)) {
+        self::copyLockFile(
+            $file,
+            dirname($file).'/'.UpdateScript::BACKUP_PATH
+        );
+    }
+
+    /**
+     * Mock lock file so that package versions can be changed before running update scripts.
+     */
+    public static function mock(string $file = 'composer.lock')
+    {
+        self::copyLockFile(
+            $file,
+            dirname($file).'/'.UpdateScript::MOCK_PATH
+        );
+    }
+
+    protected static function copyLockFile(string $from, string $to)
+    {
+        if (! is_file($from)) {
             return;
         }
 
-        $backupPath = dirname($file).'/'.UpdateScript::BACKUP_PATH;
-
-        if (! is_dir($backupDir = dirname($backupPath))) {
-            mkdir($backupDir, 0777, true);
+        if (! is_dir($toDir = dirname($to))) {
+            mkdir($toDir, 0777, true);
         }
 
-        copy($file, $backupPath);
+        copy($from, $to);
     }
 
     /**
@@ -92,7 +104,6 @@ class Lock
     /**
      * Get installed version of a specific package.
      *
-     * @param  string  $package
      * @return string
      */
     public function getInstalledVersion(string $package)
@@ -116,7 +127,6 @@ class Lock
     /**
      * Get installed version of a specific package, normalized for comparisons.
      *
-     * @param  string  $package
      * @return string
      */
     public function getNormalizedInstalledVersion(string $package)
@@ -127,7 +137,6 @@ class Lock
     /**
      * Check if package is installed.
      *
-     * @param  string  $package
      * @return bool
      */
     public function isPackageInstalled(string $package)
@@ -145,7 +154,6 @@ class Lock
     /**
      * Check if package is installed as dev dependency.
      *
-     * @param  string  $package
      * @return bool
      */
     public function isDevPackageInstalled(string $package)

@@ -16,7 +16,7 @@ class Manager
      */
     public function runAll($console = null)
     {
-        $newLockFile = Lock::file();
+        $newLockFile = Lock::file(UpdateScript::MOCK_PATH);
         $oldLockFile = Lock::file(UpdateScript::BACKUP_PATH);
 
         $scripts = $this->runUpdatableScripts(
@@ -35,14 +35,20 @@ class Manager
      *
      * @param  string  $package
      * @param  string  $oldVersion
+     * @param  string  $newVersion
      * @param  mixed  $console
      * @return bool
      */
-    public function runUpdatesForSpecificPackageVersion($package, $oldVersion, $console = null)
+    public function runUpdatesForSpecificPackageVersion($package, $oldVersion, $newVersion = null, $console = null)
     {
+        Lock::mock(base_path('composer.lock'));
         Lock::backup(base_path('composer.lock'));
 
-        $newLockFile = Lock::file();
+        $newLockFile = Lock::file(UpdateScript::MOCK_PATH);
+        if ($newVersion) {
+            $newLockFile->overridePackageVersion($package, $newVersion);
+        }
+
         $oldLockFile = Lock::file(UpdateScript::BACKUP_PATH)->overridePackageVersion($package, $oldVersion);
 
         $scripts = $this->getRegisteredScripts($console)->filter(function ($script) use ($package) {
